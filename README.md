@@ -94,3 +94,13 @@ Use the Python script on your computer to save logs as JSON and build detailed g
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+## Testing
+
+The flight-log analyzer (`analyze_flight.py`) has a pytest suite in
+`tests/` covering the binary log format it shares with the firmware:
+
+```bash
+pip install pytest
+python -m pytest -q
+```
