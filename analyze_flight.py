@@ -192,12 +192,24 @@ def calculate_analytics(records):
         failsafe_duration_ms += (records[-1]["timestamp_ms"] - fs_start)
 
     # Maneuver detection
-    bank_seconds = sum(1 for r in records if abs(r["roll"]) > 45.0) * 0.05  # assuming 20Hz (50ms interval)
-    dive_climb_seconds = sum(1 for r in records if abs(r["pitch"]) > 30.0) * 0.05
-    
+    # Derive the sample interval from the timestamps themselves instead of
+    # assuming the firmware's 20 Hz logging rate, so estimates stay correct
+    # if the log interval ever changes. Fall back to 50 ms for single-record
+    # or non-monotonic logs where no interval can be measured.
+    if len(records) > 1 and duration_ms > 0:
+        sample_interval_ms = duration_ms / (len(records) - 1)
+    else:
+        sample_interval_ms = 50.0
+    sample_interval_s = sample_interval_ms / 1000.0
+    logging_rate_hz = 1000.0 / sample_interval_ms
+    bank_seconds = sum(1 for r in records if abs(r["roll"]) > 45.0) * sample_interval_s
+    dive_climb_seconds = sum(1 for r in records if abs(r["pitch"]) > 30.0) * sample_interval_s
+
     return {
         "duration_sec": duration_sec,
         "records_count": len(records),
+        "sample_interval_ms": sample_interval_ms,
+        "logging_rate_hz": logging_rate_hz,
         "avg_throttle": avg_throttle,
         "max_throttle": max_throttle,
         "max_roll": max_roll,
@@ -385,7 +397,7 @@ def generate_html_dashboard(records, kpis, output_path):
                     </li>
                     <li class="flex justify-between py-1 border-b border-slate-800/40">
                         <span>Logging Rate</span>
-                        <span class="text-slate-400 font-medium">20 Hz (50ms interval)</span>
+                        <span class="text-slate-400 font-medium">{kpis['logging_rate_hz']:.1f} Hz ({kpis['sample_interval_ms']:.0f}ms interval)</span>
                     </li>
                     <li class="flex justify-between py-1">
                         <span>Failsafe Status</span>

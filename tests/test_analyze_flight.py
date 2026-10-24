@@ -89,3 +89,26 @@ def test_downsample_behaviour():
     assert af.downsample_data(data, max_points=2400) == data
     out = af.downsample_data(data, max_points=1200)
     assert len(out) == 1200 and out[0] == 0 and out[1] == 2
+
+
+def test_maneuver_time_uses_measured_sample_interval():
+    # Maneuver-time estimates must derive the log interval from the
+    # timestamps, not assume the firmware's 20 Hz logging rate.
+    recs = [
+        {"timestamp_ms": i * 100, "roll": 60.0, "pitch": 0.0, "g_force": 1.0,
+         "throttle": 1500, "failsafe": False}
+        for i in range(10)
+    ]
+    kpi = af.calculate_analytics(recs)
+    assert kpi["sample_interval_ms"] == pytest.approx(100.0)
+    assert kpi["logging_rate_hz"] == pytest.approx(10.0)
+    assert kpi["bank_seconds"] == pytest.approx(10 * 0.1)
+    assert kpi["dive_climb_seconds"] == pytest.approx(0.0)
+
+
+def test_maneuver_time_falls_back_for_single_record():
+    recs = [{"timestamp_ms": 0, "roll": 60.0, "pitch": 0.0, "g_force": 1.0,
+             "throttle": 1500, "failsafe": False}]
+    kpi = af.calculate_analytics(recs)
+    assert kpi["sample_interval_ms"] == pytest.approx(50.0)
+    assert kpi["bank_seconds"] == pytest.approx(0.05)
