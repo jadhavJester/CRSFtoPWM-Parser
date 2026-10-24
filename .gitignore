@@ -1,3 +1,6 @@
 # Local telemetry logs and generated reports
 flight_log.json
 flight_analysis.html
+flight_downloaded.log
+# Python bytecode / test caches generated locally
+__pycache__/
