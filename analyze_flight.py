@@ -85,7 +85,6 @@ def parse_log(file_path):
             buffer = f.read(RECORD_SIZE)
             if len(buffer) < RECORD_SIZE:
                 break
-            
             # Unpack the packed binary struct
             unpacked = struct.unpack(STRUCT_FORMAT, buffer)
             
@@ -122,7 +121,13 @@ def parse_log(file_path):
             record["yaw_rate"] = record["gz"] / GYRO_SCALE_250DPS
             
             records.append(record)
-            
+
+    trailing = file_size % RECORD_SIZE
+    if trailing:
+        print(f"[Warning] Ignored {trailing} trailing byte(s) that do not "
+              f"form a complete {RECORD_SIZE}-byte record "
+              f"(log may have been cut short, e.g. by power loss).")
+
     print(f"Successfully parsed {len(records)} log entries.")
     return records
 

@@ -47,10 +47,11 @@ def test_parse_synthetic_record_scaling(tmp_path):
     assert rec["failsafe"] is True
 
 
-def test_parse_truncated_and_empty_files(tmp_path):
+def test_parse_truncated_and_empty_files(tmp_path, capsys):
     f = tmp_path / "trunc.bin"
     f.write_bytes(pack_record() + b"\x00" * 5)  # 1 full record + junk tail
     assert len(af.parse_log(str(f))) == 1
+    assert "trailing" in capsys.readouterr().out
     empty = tmp_path / "empty.bin"
     empty.write_bytes(b"")
     assert af.parse_log(str(empty)) == []
