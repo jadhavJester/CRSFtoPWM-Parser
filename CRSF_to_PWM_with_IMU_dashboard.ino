@@ -11,8 +11,8 @@
  * ============ IMPORTANT — adjust to YOUR wiring ============
  * You said your IMU is already wired and working — I don't know which
  * pins you used, so this sketch assumes:
- *   MPU6050 SDA  ----------> GPIO8
- *   MPU6050 SCL  ----------> GPIO9
+ *   MPU6050 SDA  ----------> GPIO0
+ *   MPU6050 SCL  ----------> GPIO1
  *   MPU6050 VCC  ----------> 3V3
  *   MPU6050 GND  ----------> GND
  * If your IMU is on different pins, or a different chip (BNO055, MPU9250,

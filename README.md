@@ -31,15 +31,16 @@ This project is a high-performance **TBS Crossfire (CRSF) to PWM converter** bui
 |---|---|---|---|
 | **MPU6050** | VCC | 3.3V / 5V | Power |
 | **MPU6050** | GND | GND | Ground |
-| **MPU6050** | SDA | GPIO 8 | I2C Data |
-| **MPU6050** | SCL | GPIO 9 | I2C Clock |
+| **MPU6050** | SDA | GPIO 0 | I2C Data |
+| **MPU6050** | SCL | GPIO 1 | I2C Clock |
 | **CRSF RX** | TX | GPIO 20 (RX) | Serial Input |
-| **Servo 1 (Aileron)** | PWM | GPIO 0 | PWM Output |
-| **Servo 2 (Elevator)** | PWM | GPIO 1 | PWM Output |
-| **Servo 3 (Throttle)** | PWM | GPIO 2 | PWM Output (ESC) |
-| **Servo 4 (Rudder)** | PWM | GPIO 3 | PWM Output |
-| **Servo 5 (Flaps)** | PWM | GPIO 4 | PWM Output |
-| **Servo 6 (AUX/Arm)** | PWM | GPIO 5 | PWM Output |
+| **CRSF RX** | RX | GPIO 21 (TX) | Telemetry Output (optional) |
+| **Servo 1 (Aileron)** | PWM | GPIO 2 | PWM Output |
+| **Servo 2 (Elevator)** | PWM | GPIO 3 | PWM Output |
+| **Servo 3 (Throttle)** | PWM | GPIO 4 | PWM Output (ESC) |
+| **Servo 4 (Rudder)** | PWM | GPIO 5 | PWM Output |
+| **Servo 5 (Flaps)** | PWM | GPIO 6 | PWM Output |
+| **Servo 6 (AUX/Arm)** | PWM | GPIO 7 | PWM Output |
 | **Status LED** | LED | GPIO 8 (Onboard) | Blue Status LED |
 
 ---
