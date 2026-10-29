@@ -226,10 +226,16 @@ def calculate_analytics(records):
     }
 
 def downsample_data(data, max_points=1200):
-    """Downsample data list for faster browser chart rendering."""
+    """Downsample data list for faster browser chart rendering.
+
+    The result always holds at most ``max_points`` items: the step is
+    rounded up, so a list only slightly longer than ``max_points``
+    (e.g. 1201 items with a 1200 cap) still shrinks instead of passing
+    through unchanged, as a floor-division step of 1 would.
+    """
     if len(data) <= max_points:
         return data
-    step = len(data) // max_points
+    step = -(-len(data) // max_points)  # ceil division
     return data[::step]
 
 def generate_html_dashboard(records, kpis, output_path):

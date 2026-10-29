@@ -91,6 +91,15 @@ def test_downsample_behaviour():
     assert len(out) == 1200 and out[0] == 0 and out[1] == 2
 
 
+def test_downsample_never_exceeds_cap():
+    # A list only slightly over the cap must still shrink: with a
+    # floor-division step of 1 it used to pass through unchanged.
+    out = af.downsample_data(list(range(1201)), max_points=1200)
+    assert len(out) <= 1200 and out[0] == 0
+    out = af.downsample_data(list(range(2401)), max_points=1200)
+    assert len(out) <= 1200 and out[0] == 0
+
+
 def test_maneuver_time_uses_measured_sample_interval():
     # Maneuver-time estimates must derive the log interval from the
     # timestamps, not assume the firmware's 20 Hz logging rate.
