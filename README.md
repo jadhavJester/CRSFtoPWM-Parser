@@ -76,12 +76,8 @@ No software installation or internet connection required.
 ![In-Browser Telemetry Dashboard](flight_analysis_screenshot.png)
 
 ### Method B: Desktop Python Analyzer
-Use the Python script on your computer to save logs as JSON and build detailed ground-station reports.
-1. Install dependencies:
-   ```bash
-   pip install requests
-   ```
-2. Connect to the **RCPlane-FC** WiFi network.
+Use the Python script on your computer to save logs as JSON and build detailed ground-station reports. It uses only the Python standard library — no extra packages to install.
+1. Connect to the **RCPlane-FC** WiFi network.
 3. Run the script:
    ```bash
    python analyze_flight.py
