@@ -260,7 +260,10 @@ def generate_html_dashboard(records, kpis, output_path):
     elevators = [r["elevator"] for r in ds_records]
     rudders = [r["rudder"] for r in ds_records]
     g_forces = [round(r["g_force"], 2) for r in ds_records]
-    failsafes = [100 if r["failsafe"] else 0 for r in ds_records]
+    # Binary 0/1 failsafe markers: they render on their own hidden axis, so a
+    # failsafe interval never stretches the G-force scale (plotting them as
+    # 100 used to crush the G trace flat against the bottom of the chart).
+    failsafes = [1 if r["failsafe"] else 0 for r in ds_records]
 
     # Convert to JSON for direct injection into JavaScript
     js_data = {
@@ -463,7 +466,7 @@ def generate_html_dashboard(records, kpis, output_path):
                 <div id="forcesTab" class="tab-pane hidden">
                     <div class="mb-4">
                         <h4 class="text-md font-semibold text-white">G-Force (Total Magnitude) over Time</h4>
-                        <p class="text-xs text-slate-400">Vibration index tracks flight structural loads and landing impact forces.</p>
+                        <p class="text-xs text-slate-400">Vibration index tracks flight structural loads and landing impact forces. Red bands mark failsafe (RC link lost) intervals.</p>
                     </div>
                     <div class="relative h-[400px] w-full">
                         <canvas id="forcesChart"></canvas>
@@ -667,7 +670,8 @@ def generate_html_dashboard(records, kpis, output_path):
                         tension: 0,
                         pointRadius: 0,
                         fill: true,
-                        hidden: false
+                        hidden: false,
+                        yAxisID: 'yFailsafe'
                     }}
                 ]
             }},
@@ -678,7 +682,14 @@ def generate_html_dashboard(records, kpis, output_path):
                     y: {{
                         ...chartOptions.scales.y,
                         min: 0,
-                        title: {{ display: true, text: 'G-Force / Event Status', color: '#94a3b8' }}
+                        title: {{ display: true, text: 'G-Force (G)', color: '#94a3b8' }}
+                    }},
+                    yFailsafe: {{
+                        type: 'linear',
+                        position: 'right',
+                        min: 0,
+                        max: 1,
+                        display: false
                     }}
                 }}
             }}
