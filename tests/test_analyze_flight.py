@@ -122,3 +122,28 @@ def test_maneuver_time_falls_back_for_single_record():
     kpi = af.calculate_analytics(recs)
     assert kpi["sample_interval_ms"] == pytest.approx(50.0)
     assert kpi["bank_seconds"] == pytest.approx(0.05)
+
+
+def test_dashboard_failsafe_uses_dedicated_axis(tmp_path):
+    # Regression: failsafe markers must stay off the G-force y-axis. They
+    # used to be plotted as 100 on the shared axis, which stretched the
+    # scale and crushed the G trace whenever a failsafe occurred.
+    import json as _json
+    import re as _re
+
+    recs = [
+        {"timestamp_ms": i * 50, "roll": 0.0, "pitch": 0.0, "g_force": 1.0,
+         "throttle": 1500, "aileron": 1500, "elevator": 1500,
+         "rudder": 1500, "failsafe": (i == 3)}
+        for i in range(6)
+    ]
+    kpi = af.calculate_analytics(recs)
+    out = tmp_path / "dash.html"
+    af.generate_html_dashboard(recs, kpi, str(out))
+    html = out.read_text(encoding="utf-8")
+    assert "yFailsafe" in html
+    m = _re.search(r"const flightData = (\{.*?\});", html, _re.S)
+    data = _json.loads(m.group(1))
+    assert sorted(set(data["failsafe"])) <= [0, 1]
+    assert data["failsafe"][3] == 1
+    assert max(data["g_force"]) == pytest.approx(1.0)
