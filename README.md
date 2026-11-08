@@ -78,12 +78,12 @@ No software installation or internet connection required.
 ### Method B: Desktop Python Analyzer
 Use the Python script on your computer to save logs as JSON and build detailed ground-station reports. It uses only the Python standard library — no extra packages to install.
 1. Connect to the **RCPlane-FC** WiFi network.
-3. Run the script:
+2. Run the script:
    ```bash
    python analyze_flight.py
    ```
    This automatically downloads `flight.log` over WiFi, parses it into `flight_log.json`, and opens `flight_analysis.html` in your default browser.
-4. If you already downloaded the file manually, you can analyze it offline:
+3. If you already downloaded the file manually, you can analyze it offline:
    ```bash
    python analyze_flight.py -i flight.log
    ```
