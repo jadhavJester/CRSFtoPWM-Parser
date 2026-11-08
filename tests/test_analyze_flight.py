@@ -124,6 +124,61 @@ def test_maneuver_time_falls_back_for_single_record():
     assert kpi["bank_seconds"] == pytest.approx(0.05)
 
 
+def test_download_log_round_trip(tmp_path):
+    # download_log is the only untested path in the analyzer: serve the
+    # mock log from a local stdlib HTTP server and check the bytes land
+    # intact, plus that an unreachable ESP32 fails cleanly (False, no raise).
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    payload = MOCK_LOG.read_bytes()
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == "/log":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        out = tmp_path / "dl.log"
+        assert af.download_log(f"http://127.0.0.1:{server.server_port}",
+                               str(out)) is True
+        assert out.read_bytes() == payload
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert af.download_log("http://127.0.0.1:1", str(tmp_path / "x.log")) is False
+
+
+def test_main_end_to_end_with_mock_log(tmp_path, monkeypatch):
+    # Exercise the whole CLI path: -i mock log -> JSON + HTML dashboard.
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("sys.argv", ["analyze_flight.py", "-i", str(MOCK_LOG),
+                                     "-o", "out.json", "-d", "out.html",
+                                     "--no-open"])
+    af.main()
+    import json as _json
+    records = _json.loads((tmp_path / "out.json").read_text())
+    assert len(records) == 2400
+    assert records[0]["timestamp_ms"] == 0
+    assert records[-1]["timestamp_ms"] == 119950
+    html = (tmp_path / "out.html").read_text(encoding="utf-8")
+    assert "FLIGHT BLACKBOX ANALYZER" in html
+    assert "2400 recorded data points" in html
+
+
 def test_dashboard_failsafe_uses_dedicated_axis(tmp_path):
     # Regression: failsafe markers must stay off the G-force y-axis. They
     # used to be plotted as 100 on the shared axis, which stretched the
