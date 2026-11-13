@@ -6,6 +6,7 @@ that contract, the unit scaling, and the analytics KPIs, using both
 synthetic records and the mock_flight.log fixture shipped in the repo.
 """
 
+import re
 import struct
 from pathlib import Path
 
@@ -15,6 +16,23 @@ import analyze_flight as af
 
 REPO = Path(__file__).resolve().parents[1]
 MOCK_LOG = REPO / "mock_flight.log"
+FIRMWARE = REPO / "CRSF_to_PWM_with_IMU_dashboard.ino"
+
+# C integer type -> struct format character (little-endian, standard sizes)
+C_TYPE_FORMAT = {
+    "uint32_t": "I",
+    "int16_t": "h",
+    "uint16_t": "H",
+    "uint8_t": "B",
+}
+
+# Field order the Python parser maps positionally from the binary record.
+EXPECTED_FIRMWARE_FIELDS = [
+    "timestamp", "roll", "pitch",
+    "ax", "ay", "az", "gx", "gy", "gz",
+    "aileron", "elevator", "throttle", "rudder", "flaps", "aux",
+    "flags",
+]
 
 
 def pack_record(ts=1000, roll=0, pitch=0, ax=0, ay=0, az=0,
@@ -28,6 +46,34 @@ def pack_record(ts=1000, roll=0, pitch=0, ax=0, ay=0, az=0,
 def test_record_format_matches_firmware_struct():
     assert af.RECORD_SIZE == 33
     assert af.RECORD_SIZE == struct.calcsize("<IhhhhhhhhHHHHHHB")
+
+    # Parse the packed LogRecord struct out of the firmware sketch itself,
+    # so a field added, reordered, or retyped there fails here instead of
+    # silently desyncing the Python parser from the binary log.
+    text = FIRMWARE.read_text()
+    m = re.search(
+        r"struct __attribute__\(\(__packed__\)\) LogRecord \{(.*?)\};",
+        text, re.S,
+    )
+    assert m, "LogRecord struct not found in firmware sketch"
+    fmt = "<"
+    fields = []
+    for line in m.group(1).splitlines():
+        line = line.split("//")[0].strip().rstrip(";").strip()
+        if not line:
+            continue
+        decl = re.match(r"(\w+)\s+([\w\s,]+)$", line)
+        assert decl, f"unparsable struct line in firmware: {line!r}"
+        c_type, names = decl.groups()
+        assert c_type in C_TYPE_FORMAT, f"unknown C type in LogRecord: {c_type}"
+        for name in names.split(","):
+            name = name.strip()
+            assert name, f"empty field name in struct line: {line!r}"
+            fields.append(name)
+            fmt += C_TYPE_FORMAT[c_type]
+    assert fields == EXPECTED_FIRMWARE_FIELDS
+    assert fmt == af.STRUCT_FORMAT
+    assert struct.calcsize(fmt) == af.RECORD_SIZE == 33
 
 
 def test_parse_synthetic_record_scaling(tmp_path):
