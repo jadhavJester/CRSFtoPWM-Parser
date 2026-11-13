@@ -568,7 +568,10 @@ async function clearLog() {
 
 function downsample(arr, maxPoints = 800) {
   if (arr.length <= maxPoints) return arr;
-  const step = Math.floor(arr.length / maxPoints);
+  // Ceil division: a list only slightly over the cap (e.g. 801 items with
+  // an 800 cap) still shrinks instead of passing through unchanged, as a
+  // floor-division step of 1 would. Same fix as analyze_flight.py.
+  const step = Math.ceil(arr.length / maxPoints);
   const res = [];
   for (let i = 0; i < arr.length; i += step) {
     res.push(arr[i]);
