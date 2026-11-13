@@ -82,7 +82,9 @@ Use the Python script on your computer to save logs as JSON and build detailed g
    ```bash
    python analyze_flight.py
    ```
-   This automatically downloads `flight.log` over WiFi, parses it into `flight_log.json`, and opens `flight_analysis.html` in your default browser.
+   This automatically downloads the log over WiFi (saved as
+   `flight_downloaded.log`), parses it into `flight_log.json`, and opens
+   `flight_analysis.html` in your default browser.
 3. If you already downloaded the file manually, you can analyze it offline:
    ```bash
    python analyze_flight.py -i flight.log
