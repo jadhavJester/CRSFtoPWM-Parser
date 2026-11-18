@@ -746,6 +746,15 @@ async function analyzeFlightLog() {
       alert("Flight log is empty.");
       return;
     }
+
+    if (numRecords < 2) {
+      // One record leaves nothing to average: the vibration index divides
+      // by records.length - 1 and the charts divide by data.length - 1,
+      // so a single-record log (e.g. power cut right after arming) would
+      // render NaN instead of stats.
+      alert("Flight log has only one record — at least two are needed for analysis.");
+      return;
+    }
     
     let maxRoll = 0;
     let maxPitch = 0;
