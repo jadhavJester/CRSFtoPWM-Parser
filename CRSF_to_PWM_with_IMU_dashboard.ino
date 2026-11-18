@@ -133,6 +133,9 @@ static uint32_t lastLogWriteMillis = 0;
 static File currentLogFile;
 static uint32_t logRecordsCount = 0;
 static uint32_t logStartTimeMillis = 0;
+// Duration of the most recently stopped log, so /log_status can still
+// report it after logging ends (and for a log restored from flash).
+static uint32_t lastLogDurationMs = 0;
 
 #define LOG_BUFFER_SIZE 10 // write in chunks of 10 records (330 bytes)
 static LogRecord logBuffer[LOG_BUFFER_SIZE];
@@ -346,6 +349,7 @@ static void stopLogging() {
   if (currentLogFile) {
     currentLogFile.close();
   }
+  lastLogDurationMs = millis() - logStartTimeMillis;
   loggingActive = false;
   Serial.printf("[Logger] Flight logging stopped. Total records: %u\n", logRecordsCount);
 }
@@ -949,7 +953,7 @@ static void handleLogStatus() {
   json += "\"active\":" + String(loggingActive ? "true" : "false") + ",";
   json += "\"size\":" + String(fileSize) + ",";
   json += "\"records\":" + String(logRecordsCount) + ",";
-  json += "\"duration_ms\":" + String(loggingActive ? (millis() - logStartTimeMillis) : 0);
+  json += "\"duration_ms\":" + String(loggingActive ? (millis() - logStartTimeMillis) : lastLogDurationMs);
   json += "}";
   server.send(200, "application/json", json);
 }
@@ -977,6 +981,10 @@ void setup() {
       if (f) {
         logRecordsCount = f.size() / sizeof(LogRecord);
         f.close();
+        // No timestamps survive a reboot, so estimate the restored log's
+        // duration from its record count at the nominal 50 ms interval.
+        lastLogDurationMs = (logRecordsCount > 0)
+            ? (logRecordsCount - 1) * LOG_INTERVAL_MS : 0;
         Serial.printf("[System] Found existing flight log, records: %u\n", logRecordsCount);
       }
     }
