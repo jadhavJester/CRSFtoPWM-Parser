@@ -772,7 +772,7 @@ async function analyzeFlightLog() {
       const rud = view.getUint16(o + 26, true);
       const flp = view.getUint16(o + 28, true);
       const aux = view.getUint16(o + 30, true);
-      const failsafe = view.getUint8(o + 32) === 1;
+      const failsafe = (view.getUint8(o + 32) & 1) === 1;
       
       const ax_g = ax / 16384.0;
       const ay_g = ay / 16384.0;

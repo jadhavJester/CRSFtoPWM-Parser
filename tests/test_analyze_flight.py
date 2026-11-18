@@ -231,6 +231,17 @@ def test_download_log_round_trip(tmp_path):
     assert af.download_log("http://127.0.0.1:1", str(tmp_path / "x.log")) is False
 
 
+def test_browser_analyzer_decodes_failsafe_by_bit():
+    # The LogRecord flags byte defines bit 0 as failsafe, and the Python
+    # parser masks it with & 0x01. The in-browser analyzer used to compare
+    # the whole byte (=== 1), so a future flags bit would silently hide a
+    # failsafe there. Pin the bit-mask decode in the firmware sketch.
+    text = FIRMWARE.read_text()
+    m = re.search(r"const failsafe = \(view\.getUint8\(o \+ 32\)[^;]*;", text)
+    assert m, "failsafe decode not found in browser analyzer"
+    assert "& 1" in m.group(0)
+
+
 def test_main_end_to_end_with_mock_log(tmp_path, monkeypatch):
     # Exercise the whole CLI path: -i mock log -> JSON + HTML dashboard.
     monkeypatch.chdir(tmp_path)
