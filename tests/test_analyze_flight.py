@@ -179,6 +179,20 @@ def test_maneuver_time_falls_back_for_single_record():
     assert kpi["bank_seconds"] == pytest.approx(0.05)
 
 
+def test_main_exits_when_json_write_fails(tmp_path, monkeypatch):
+    # A JSON export failure used to print an error and carry on building
+    # the dashboard with exit code 0. Point -o at a directory to force
+    # the write to fail: the run must exit non-zero and stop there.
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("sys.argv", ["analyze_flight.py", "-i", str(MOCK_LOG),
+                                     "-o", str(tmp_path), "-d", "out.html",
+                                     "--no-open"])
+    with pytest.raises(SystemExit) as exc:
+        af.main()
+    assert exc.value.code == 1
+    assert not (tmp_path / "out.html").exists()
+
+
 def test_download_log_round_trip(tmp_path):
     # download_log is the only untested path in the analyzer: serve the
     # mock log from a local stdlib HTTP server and check the bytes land

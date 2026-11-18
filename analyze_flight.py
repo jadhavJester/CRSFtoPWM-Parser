@@ -747,6 +747,7 @@ def main():
         print(f"JSON save complete.")
     except Exception as e:
         print(f"[Error] Failed to write JSON file: {e}")
+        sys.exit(1)
 
     # 4. Perform Flight Analysis / KPIs
     kpis = calculate_analytics(records)
