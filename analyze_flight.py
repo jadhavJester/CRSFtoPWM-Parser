@@ -42,6 +42,16 @@ RECORD_SIZE = struct.calcsize(STRUCT_FORMAT)
 ACCEL_SCALE_2G = 16384.0  # LSB per G (MPU6050 default +-2g range)
 GYRO_SCALE_250DPS = 131.0 # LSB per deg/s (MPU6050 default +-250dps range)
 
+# Servo pulse range shared by the firmware, this analyzer, and the
+# in-browser dashboard: CRSF channels map onto 988-2012 us.
+PWM_MIN_US = 988
+PWM_MAX_US = 2012
+
+def throttle_to_pct(throttle_us):
+    """Map a throttle pulse width in microseconds to 0-100%, clamped."""
+    pct = ((throttle_us - PWM_MIN_US) / (PWM_MAX_US - PWM_MIN_US)) * 100.0
+    return max(0.0, min(100.0, pct))
+
 def download_log(url, output_path):
     """Download the binary flight log from the ESP32 Web Server."""
     print(f"Connecting to ESP32 Flight Controller at {url}...")
@@ -140,9 +150,7 @@ def calculate_analytics(records):
     duration_sec = duration_ms / 1000.0
     
     # Throttle stats (typically 988us to 2012us)
-    throttles = [r["throttle"] for r in records]
-    throttles_pct = [((t - 988) / (2012 - 988)) * 100.0 for t in throttles]
-    throttles_pct = [max(0.0, min(100.0, p)) for p in throttles_pct]
+    throttles_pct = [throttle_to_pct(t) for t in [r["throttle"] for r in records]]
     
     avg_throttle = sum(throttles_pct) / len(throttles_pct)
     max_throttle = max(throttles_pct)
@@ -253,8 +261,7 @@ def generate_html_dashboard(records, kpis, output_path):
     timestamps = [round((r["timestamp_ms"] - records[0]["timestamp_ms"]) / 1000.0, 2) for r in ds_records]
     rolls = [round(r["roll"], 1) for r in ds_records]
     pitches = [round(r["pitch"], 1) for r in ds_records]
-    throttles_pct = [round(((r["throttle"] - 988) / (2012 - 988)) * 100.0, 1) for r in ds_records]
-    throttles_pct = [max(0.0, min(100.0, p)) for p in throttles_pct]
+    throttles_pct = [round(throttle_to_pct(r["throttle"]), 1) for r in ds_records]
     
     ailerons = [r["aileron"] for r in ds_records]
     elevators = [r["elevator"] for r in ds_records]

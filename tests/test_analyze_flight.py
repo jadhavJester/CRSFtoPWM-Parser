@@ -131,6 +131,15 @@ def test_analytics_empty_input():
     assert af.calculate_analytics([]) == {}
 
 
+def test_throttle_to_pct():
+    assert af.throttle_to_pct(988) == pytest.approx(0.0)
+    assert af.throttle_to_pct(2012) == pytest.approx(100.0)
+    assert af.throttle_to_pct(1500) == pytest.approx(50.0)
+    # Out-of-range pulses clamp instead of producing <0% or >100%.
+    assert af.throttle_to_pct(900) == pytest.approx(0.0)
+    assert af.throttle_to_pct(2100) == pytest.approx(100.0)
+
+
 def test_downsample_behaviour():
     data = list(range(2400))
     assert af.downsample_data(data, max_points=2400) == data
