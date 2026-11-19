@@ -254,6 +254,15 @@ def test_log_clear_resets_status_counters():
     assert "lastLogDurationMs = 0" in body
 
 
+def test_browser_analyzer_plots_throttle_in_microseconds():
+    # The servo chart shares one 0-2100 us axis for throttle/aileron/
+    # elevator, so throttle must be plotted in raw microseconds: as a
+    # 0-100% value it hugged the bottom of the chart and read as ~0.
+    text = FIRMWARE.read_text()
+    assert 'key: "thr", name: "Throttle (us)"' in text
+    assert "thrPct" not in text
+
+
 def test_main_end_to_end_with_mock_log(tmp_path, monkeypatch):
     # Exercise the whole CLI path: -i mock log -> JSON + HTML dashboard.
     monkeypatch.chdir(tmp_path)

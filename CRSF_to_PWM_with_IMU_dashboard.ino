@@ -796,8 +796,6 @@ async function analyzeFlightLog() {
       maxPitch = Math.max(maxPitch, Math.abs(pitch));
       maxG = Math.max(maxG, g_force);
       
-      const thrPct = Math.max(0, Math.min(100, ((thr - 988) / (2012 - 988)) * 100));
-      
       if (failsafe && !inFailsafe) {
         failsafesCount++;
         inFailsafe = true;
@@ -810,8 +808,11 @@ async function analyzeFlightLog() {
       }
       lastG = g_force;
       
+      // Throttle stays in raw microseconds: the servo chart shares one
+      // 0-2100 us axis for throttle/aileron/elevator, so a 0-100% value
+      // would hug the bottom of the chart and read as ~0.
       records.push({
-        time, roll, pitch, g_force, ail, ele, thr: thrPct, rud, flp, aux, failsafe
+        time, roll, pitch, g_force, ail, ele, thr, rud, flp, aux, failsafe
       });
     }
     
@@ -840,7 +841,7 @@ async function analyzeFlightLog() {
     ], -180, 180, "Attitude Dynamics", "°");
     
     drawChart("servosSvg", plotData, [
-      { key: "thr", name: "Throttle %", color: "#38bdf8" },
+      { key: "thr", name: "Throttle (us)", color: "#38bdf8" },
       { key: "ail", name: "Aileron (us)", color: "#22c55e", width: 1 },
       { key: "ele", name: "Elevator (us)", color: "#f59e0b", width: 1 }
     ], 0, 2100, "Control Inputs", "");
