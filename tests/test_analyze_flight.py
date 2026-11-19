@@ -242,6 +242,18 @@ def test_browser_analyzer_decodes_failsafe_by_bit():
     assert "& 1" in m.group(0)
 
 
+def test_log_clear_resets_status_counters():
+    # /log_clear used to delete the log file without resetting the
+    # counters /log_status reports, so the dashboard kept showing the
+    # deleted log's record count and duration next to a 0 KB size.
+    text = FIRMWARE.read_text()
+    m = re.search(r"static void handleLogClear\(\) \{(.*?)\n\}", text, re.S)
+    assert m, "handleLogClear not found in firmware sketch"
+    body = m.group(0)
+    assert "logRecordsCount = 0" in body
+    assert "lastLogDurationMs = 0" in body
+
+
 def test_main_end_to_end_with_mock_log(tmp_path, monkeypatch):
     # Exercise the whole CLI path: -i mock log -> JSON + HTML dashboard.
     monkeypatch.chdir(tmp_path)

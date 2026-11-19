@@ -931,10 +931,19 @@ static void handleLogClear() {
   stopLogging();
   if (LittleFS.exists(LOG_FILE_PATH)) {
     if (LittleFS.remove(LOG_FILE_PATH)) {
+      // The log on disk is gone, so the counters /log_status reports must
+      // go back to zero too — otherwise it keeps advertising the deleted
+      // log's record count and duration next to a 0 KB size.
+      logRecordsCount = 0;
+      lastLogDurationMs = 0;
       server.send(200, "application/json", "{\"status\":\"cleared\"}");
       Serial.println("[Logger] Log cleared via Web request.");
       return;
     }
+  } else {
+    // No log file on disk: nothing to report, so clear any stale counters.
+    logRecordsCount = 0;
+    lastLogDurationMs = 0;
   }
   server.send(200, "application/json", "{\"status\":\"not_found_or_error\"}");
 }
