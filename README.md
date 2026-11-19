@@ -55,9 +55,9 @@ This project is a high-performance **TBS Crossfire (CRSF) to PWM converter** bui
 4. Set **Partition Scheme** to: **Default 4MB with spiffs/littlefs** or similar to allocate space for flight logs.
 
 ### 2. Required Libraries
-Install the following libraries via the Arduino Library Manager:
-* **Adafruit MPU6050** (along with its dependencies: `Adafruit Unified Sensor` and `Adafruit BusIO`)
-* **Wire** & **SPI** (Standard built-in libraries)
+Install the following library via the Arduino Library Manager:
+* **ESP32Servo** by Kevin Harrington / Dlloydev (latest 3.x)
+* **Wire**, **WiFi**, **WebServer** & **LittleFS** ship with the ESP32 Arduino core — no extra install needed. The MPU6050 is read over raw I2C registers, so no IMU library is required.
 
 ### 3. Flash the Board
 Compile and upload `CRSF_to_PWM_with_IMU_dashboard.ino` to the ESP32-C3.
