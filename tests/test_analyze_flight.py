@@ -303,3 +303,21 @@ def test_dashboard_failsafe_uses_dedicated_axis(tmp_path):
     assert sorted(set(data["failsafe"])) <= [0, 1]
     assert data["failsafe"][3] == 1
     assert max(data["g_force"]) == pytest.approx(1.0)
+
+
+def test_dashboard_uses_only_valid_tailwind_slate_steps(tmp_path):
+    # Regression: the KPI cards and charts section used border-slate-850,
+    # which is not a step in Tailwind's default slate palette (50-950),
+    # so the Play CDN generated no border-color rule for those cards.
+    recs = [
+        {"timestamp_ms": i * 50, "roll": 0.0, "pitch": 0.0, "g_force": 1.0,
+         "throttle": 1500, "aileron": 1500, "elevator": 1500,
+         "rudder": 1500, "failsafe": False}
+        for i in range(6)
+    ]
+    kpi = af.calculate_analytics(recs)
+    out = tmp_path / "dash.html"
+    af.generate_html_dashboard(recs, kpi, str(out))
+    html = out.read_text(encoding="utf-8")
+    assert "slate-850" not in html
+    assert "border-slate-800" in html

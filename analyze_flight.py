@@ -334,28 +334,28 @@ def generate_html_dashboard(records, kpis, output_path):
         <!-- KPIs Overview -->
         <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             <!-- Flight Duration -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Flight Duration</div>
                 <div class="text-2xl font-bold mt-2 text-white tech-font">{duration_str}</div>
                 <div class="text-xs text-slate-500 mt-1">{kpis['records_count']} recorded data points</div>
             </div>
 
             <!-- Average Throttle -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Average Throttle</div>
                 <div class="text-2xl font-bold mt-2 text-sky-400 tech-font">{kpis['avg_throttle']:.1f}%</div>
                 <div class="text-xs text-slate-500 mt-1">Peak: {kpis['max_throttle']:.1f}%</div>
             </div>
 
             <!-- Max G-force -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Peak G-Force</div>
                 <div class="text-2xl font-bold mt-2 text-orange-400 tech-font">{kpis['max_g']:.2f} G</div>
                 <div class="text-xs text-slate-500 mt-1">Avg Force: {kpis['avg_g']:.2f} G</div>
             </div>
 
             <!-- Attitude Extremes -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Peak Angles</div>
                 <div class="text-lg font-bold mt-2 text-white tech-font">
                     R: <span class="text-purple-400">{kpis['max_roll']:.1f}°</span> | P: <span class="text-fuchsia-400">{kpis['max_pitch']:.1f}°</span>
@@ -364,14 +364,14 @@ def generate_html_dashboard(records, kpis, output_path):
             </div>
 
             <!-- Vibration Score -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vibration Index</div>
                 <div class="text-xl font-bold mt-2 text-{kpis['vibration_color']}-400 tech-font truncate">{kpis['vibration_score'].split(' ')[0]}</div>
                 <div class="text-xs text-slate-500 mt-2">Prop variance: {kpis['vibration_level']:.3f}g</div>
             </div>
 
             <!-- Failsafes -->
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-850 glow-card">
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 glow-card">
                 <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Failsafes</div>
                 <div class="text-2xl font-bold mt-2 tech-font {'text-emerald-400' if kpis['failsafe_events'] == 0 else 'text-red-500 animate-pulse'}">
                     {kpis['failsafe_events']}
@@ -431,7 +431,7 @@ def generate_html_dashboard(records, kpis, output_path):
         </section>
 
         <!-- Charts Dashboard Tabs -->
-        <section class="bg-slate-900 rounded-xl border border-slate-850 p-6 glow-card">
+        <section class="bg-slate-900 rounded-xl border border-slate-800 p-6 glow-card">
             <!-- Tabs Menu -->
             <div class="flex border-b border-slate-800 mb-6 text-sm">
                 <button onclick="switchTab('attitudeTab', this)" class="tab-btn px-4 py-2 font-bold text-sky-400 border-b-2 border-sky-400 focus:outline-none transition">
