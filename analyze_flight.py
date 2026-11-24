@@ -266,6 +266,8 @@ def generate_html_dashboard(records, kpis, output_path):
     ailerons = [r["aileron"] for r in ds_records]
     elevators = [r["elevator"] for r in ds_records]
     rudders = [r["rudder"] for r in ds_records]
+    flaps = [r["flaps"] for r in ds_records]
+    aux = [r["aux"] for r in ds_records]
     g_forces = [round(r["g_force"], 2) for r in ds_records]
     # Binary 0/1 failsafe markers: they render on their own hidden axis, so a
     # failsafe interval never stretches the G-force scale (plotting them as
@@ -281,6 +283,8 @@ def generate_html_dashboard(records, kpis, output_path):
         "aileron": ailerons,
         "elevator": elevators,
         "rudder": rudders,
+        "flaps": flaps,
+        "aux": aux,
         "g_force": g_forces,
         "failsafe": failsafes
     }
@@ -617,6 +621,26 @@ def generate_html_dashboard(records, kpis, output_path):
                         label: 'Rudder command (us)',
                         data: flightData.rudder,
                         borderColor: '#ef4444',
+                        borderWidth: 1.5,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        yAxisID: 'yServos',
+                        hidden: true
+                    }},
+                    {{
+                        label: 'Flaps command (us)',
+                        data: flightData.flaps,
+                        borderColor: '#a78bfa',
+                        borderWidth: 1.5,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        yAxisID: 'yServos',
+                        hidden: true
+                    }},
+                    {{
+                        label: 'Aux command (us)',
+                        data: flightData.aux,
+                        borderColor: '#f472b6',
                         borderWidth: 1.5,
                         tension: 0.1,
                         pointRadius: 0,

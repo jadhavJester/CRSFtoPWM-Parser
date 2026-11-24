@@ -290,7 +290,7 @@ def test_dashboard_failsafe_uses_dedicated_axis(tmp_path):
     recs = [
         {"timestamp_ms": i * 50, "roll": 0.0, "pitch": 0.0, "g_force": 1.0,
          "throttle": 1500, "aileron": 1500, "elevator": 1500,
-         "rudder": 1500, "failsafe": (i == 3)}
+         "rudder": 1500, "flaps": 988, "aux": 988, "failsafe": (i == 3)}
         for i in range(6)
     ]
     kpi = af.calculate_analytics(recs)
@@ -312,7 +312,7 @@ def test_dashboard_uses_only_valid_tailwind_slate_steps(tmp_path):
     recs = [
         {"timestamp_ms": i * 50, "roll": 0.0, "pitch": 0.0, "g_force": 1.0,
          "throttle": 1500, "aileron": 1500, "elevator": 1500,
-         "rudder": 1500, "failsafe": False}
+         "rudder": 1500, "flaps": 988, "aux": 988, "failsafe": False}
         for i in range(6)
     ]
     kpi = af.calculate_analytics(recs)
@@ -321,3 +321,28 @@ def test_dashboard_uses_only_valid_tailwind_slate_steps(tmp_path):
     html = out.read_text(encoding="utf-8")
     assert "slate-850" not in html
     assert "border-slate-800" in html
+
+
+def test_dashboard_charts_all_six_servo_channels(tmp_path):
+    # The servo chart used to plot only throttle/aileron/elevator/rudder
+    # even though flaps and aux are logged, parsed, and exported to JSON.
+    # All six channels must reach the dashboard data and the chart.
+    import json as _json
+    import re as _re
+
+    recs = [
+        {"timestamp_ms": i * 50, "roll": 0.0, "pitch": 0.0, "g_force": 1.0,
+         "throttle": 1500, "aileron": 1500, "elevator": 1500,
+         "rudder": 1500, "flaps": 1200, "aux": 1800, "failsafe": False}
+        for i in range(6)
+    ]
+    kpi = af.calculate_analytics(recs)
+    out = tmp_path / "dash.html"
+    af.generate_html_dashboard(recs, kpi, str(out))
+    html = out.read_text(encoding="utf-8")
+    m = _re.search(r"const flightData = (\{.*?\});", html, _re.S)
+    data = _json.loads(m.group(1))
+    assert data["flaps"] == [1200] * 6
+    assert data["aux"] == [1800] * 6
+    assert 'label: \'Flaps command (us)\'' in html
+    assert 'label: \'Aux command (us)\'' in html
